@@ -1,0 +1,67 @@
+<form [formGroup]="form" class="space-y-6">
+  <!-- Title -->
+  <input
+    type="text"
+    formControlName="title"
+    placeholder="Note Title"
+    class="w-full text-2xl font-semibold border-b p-2 outline-none"
+  />
+
+  <!-- Quill Toolbar -->
+  <div id="editor-toolbar" class="mb-2">
+    <span class="ql-formats">
+      <select class="ql-header">
+        <option selected></option>
+        <option value="1"></option>
+        <option value="2"></option>
+      </select>
+      <select class="ql-font"></select>
+    </span>
+    <span class="ql-formats">
+      <button class="ql-bold"></button>
+      <button class="ql-italic"></button>
+      <button class="ql-underline"></button>
+      <button class="ql-strike"></button>
+    </span>
+    <span class="ql-formats">
+      <button class="ql-blockquote"></button>
+      <button class="ql-code-block"></button>
+    </span>
+    <span class="ql-formats">
+      <button class="ql-list" value="ordered"></button>
+      <button class="ql-list" value="bullet"></button>
+      <button class="ql-indent" value="-1"></button>
+      <button class="ql-indent" value="+1"></button>
+    </span>
+    <span class="ql-formats">
+      <button class="ql-link"></button>
+      <button class="ql-image"></button>
+      <button class="ql-video"></button>
+    </span>
+    <span class="ql-formats">
+      <select class="ql-color"></select>
+      <select class="ql-background"></select>
+    </span>
+    <span class="ql-formats">
+      <select class="ql-align"></select>
+      <button class="ql-clean"></button>
+    </span>
+  </div>
+
+  <!-- Editor -->
+  <div
+    #editorContainer
+    class="min-h-[300px] bg-white p-4 border rounded shadow-sm"
+  ></div>
+
+  <!-- Save Button -->
+  <div class="flex justify-end">
+    <button
+      type="button"
+      class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+      (click)="saveNote()"
+    >
+      Save Note
+    </button>
+  </div>
+</form>

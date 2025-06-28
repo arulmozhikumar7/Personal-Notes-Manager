@@ -1,0 +1,207 @@
+<div class="p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <h2 class="text-4xl font-bold text-slate-800 flex items-center gap-3">
+      <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      Your Notes
+    </h2>
+    <button
+      routerLink="/notes/new"
+      id="add-note"
+      class="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 font-medium"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      New Note
+    </button>
+  </div>
+
+<!-- Filters -->
+<!-- Search & Tag Filter -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-6">
+  <!-- Search Bar -->
+  <div class="relative w-full sm:w-1/2">
+    <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+    <input
+      type="text"
+      id="note-search"
+      class="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm transition-all duration-200"
+      placeholder="Search your notes..."
+      [formControl]="searchControl"
+    />
+  </div>
+
+  <!-- Toggle Button -->
+  <button
+    class="px-6 py-3 text-sm font-medium rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-indigo-300 hover:text-indigo-700 transition-all duration-200 shadow-sm flex items-center gap-2"
+    (click)="toggleTagPanel()"
+    id="note-tag-filter"
+  >
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+    </svg>
+    Filter by Tags
+  </button>
+</div>
+
+<!-- Selected Tags -->
+<div *ngIf="selectedTags.length" class="flex flex-wrap gap-3 mb-6 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+  <span
+    *ngFor="let tag of selectedTags"
+    class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 text-sm font-medium border border-indigo-200"
+  >
+    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+    </svg>
+    {{ tag }}
+    <button
+      (click)="removeTag(tag)"
+      class="ml-1 text-indigo-600 hover:text-red-500 focus:outline-none transition-colors duration-200"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </span>
+
+  <button
+    (click)="clearTags()"
+    class="text-sm text-red-500 hover:text-red-700 hover:underline ml-2 font-medium transition-colors duration-200"
+  >
+    Clear All
+  </button>
+</div>
+
+<!-- Tag Selection Panel -->
+<div
+  *ngIf="showTagPanel"
+  class="rounded-xl bg-white border border-slate-200 shadow-lg p-6 space-y-4 mb-6"
+>
+  <!-- Search within tags -->
+  <div class="relative">
+    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+    <input
+      type="text"
+      class="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+      placeholder="Search tags..."
+      [formControl]="tagSearchControl"
+    />
+  </div>
+
+  <!-- Scrollable tag pills -->
+  <div
+    class="max-h-48 overflow-y-auto custom-scrollbar flex flex-wrap gap-3 pr-2"
+  >
+    <button
+      *ngFor="let tag of filteredTags"
+      (click)="toggleTag(tag)"
+      [ngClass]="{
+        'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md': selectedTags.includes(tag),
+        'bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200': !selectedTags.includes(tag)
+      }"
+      class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-sm min-w-fit flex items-center gap-1"
+    >
+      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+      </svg>
+      {{ tag }}
+    </button>
+  </div>
+</div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-slate-500 text-center py-16">
+    <svg class="animate-spin h-8 w-8 mr-3 inline text-indigo-600" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+    </svg>
+    <span class="text-lg font-medium">Loading your notes...</span>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && notes.length === 0" class="text-center text-slate-400 mt-16">
+    <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+    <p class="text-2xl font-semibold mb-2">No notes yet</p>
+    <p class="text-sm">Start by creating your first note to organize your thoughts.</p>
+  </div>
+
+  <!-- Notes Grid -->
+  <div *ngIf="!loading && notes.length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 ">
+<div
+  *ngFor="let note of sortedNotes()"
+  id="note-card"
+  class="p-6 rounded-2xl border shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group flex flex-col justify-between"
+  [ngClass]="{
+    'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-amber-100': note.isPinned,
+    'bg-white border-slate-200': !note.isPinned
+  }"
+>
+  <!-- Title -->
+  <h3 class="text-lg font-bold text-slate-800 mb-3">{{ note.title }}</h3>
+
+  <!-- Icons -->
+  <div class="flex gap-2 items-center mb-4 opacity-60 group-hover:opacity-100 transition-opacity duration-200">
+    <button title="Preview" (click)="goToNote(note.id)" class="icon-btn text-indigo-600" id="note-view">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 
+          9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      </svg>
+    </button>
+    <button title="Delete Note" (click)="deleteNote(note.id)" class="icon-btn text-red-500" id="note-delete">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+      </svg>
+    </button>
+    <button title="Toggle Pin" (click)="togglePin(note)"
+    id="note-pin"
+      [ngClass]="note.isPinned ? 'text-amber-500' : 'text-slate-500'"
+      class="icon-btn">
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path
+          d="M6 2a1 1 0 00-1 1v1.586l-1.293 1.293a1 1 0 000 1.414L6 9.414V15a1 1 0 001.707.707l2-2a1 1 0 00.293-.707V9.414l2.293-2.293a1 1 0 000-1.414L11 4.586V3a1 1 0 00-1-1H6z"
+        />
+      </svg>
+    </button>
+    <span *ngIf="note.isPinned" class="ml-auto text-amber-700 text-xs font-semibold bg-amber-100 px-3 py-1 rounded-full">Pinned</span>
+  </div>
+
+  <!-- Tags (always rendered) -->
+  <div class="flex flex-wrap gap-2 mb-4 min-h-[28px]">
+    <ng-container *ngIf="note.tags?.length; else emptyTags">
+      <span *ngFor="let tag of note.tags"
+        class="px-3 py-1 bg-slate-100 text-slate-700 text-xs rounded-lg font-medium border border-slate-200 flex items-center gap-1">
+        <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+        </svg>
+        {{ tag }}
+      </span>
+    </ng-container>
+    <ng-template #emptyTags>
+      <span class="invisible">.</span> <!-- Keeps layout space -->
+    </ng-template>
+  </div>
+
+  <!-- Last Modified -->
+  <div class="mt-auto text-xs text-slate-500 flex items-center gap-2 pt-2 border-t border-slate-100" id="note-modify-time">
+    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    Last Modified: {{ note.savedAt | date: 'MMM d, y, h:mm a' }}
+  </div>
+</div>
+
+
+  </div>
+</div>
+<router-outlet/>
