@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { DraftService } from '@/core/services/draft.service';
 import { DraftDto } from '@/core/models/draft.model';
 import { ApiResponse } from '@/core/models/api-response.model';
@@ -9,18 +9,20 @@ import { Subject, debounceTime } from 'rxjs';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { NoteService } from '@/core/services/note.service';
+import { driver } from 'driver.js';
+import "driver.js/dist/driver.css";
 
 @Component({
   selector: 'app-draft-view',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule,RouterModule],
   templateUrl: './draft-view.component.html',
 })
 export class DraftViewComponent implements OnInit, AfterViewInit {
   draft: DraftDto = { id: 0, title: '', content: '', tags: [], createdAt: '', savedAt: '' };
   tagInput = '';
   loading = true;
-
+  errorMessage = '';
   private saveSubject = new Subject<void>();
   @ViewChild('quillEditor', { static: false }) quillEditorRef!: ElementRef;
   private quillInstance: Quill | null = null;
@@ -33,16 +35,27 @@ export class DraftViewComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+
+     const tourKey = 'draft-list';
+  const localStorageKey = `tour-${tourKey}`;
+
+  if (!localStorage.getItem(localStorageKey)) {
+    localStorage.setItem(localStorageKey, 'false');
+  }
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
       this.draftService.getById(id).subscribe({
         next: (res: ApiResponse<DraftDto>) => {
           this.draft = res.data ?? this.draft;
           this.loading = false;
-          setTimeout(() => this.initEditor()); // Delay init until content is fetched
+          setTimeout(() => this.initEditor());
         },
         error: (err) => {
-          console.error('Failed to load draft', err);
+           if (err.status === 404) {
+          this.errorMessage = 'No draft found with that ID.';
+        } else {
+          this.errorMessage = 'Failed to load draft.';
+        }
           this.loading = false;
         }
       });
@@ -55,8 +68,85 @@ export class DraftViewComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Editor now initialized only after data fetch
+   this.startEditTour();
   }
+
+
+   startEditTour(): void {
+  const tourKey = 'draft-view';
+  const localStorageKey = `tour-${tourKey}`;
+
+
+  if (localStorage.getItem(localStorageKey) === 'true') return;
+ 
+  const Driver = driver({
+    showProgress: true,
+    popoverClass: 'driverjs-theme',
+  steps: [
+  {
+    element: '#draft-title',
+    popover: {
+      title: '📝 Draft Title',
+      description: 'Enter a title for your draft. If left empty, it will default to "Untitled".',
+      side: 'top',
+      align: 'start'
+    }
+  },
+  {
+    element: '#draft-tag',
+    popover: {
+      title: '🏷️ Add Tags',
+      description: 'Add relevant tags to organize your draft. Press Enter after each tag.',
+      side: 'top',
+      align: 'start'
+    }
+  },
+  {
+    element: '#edit-content',
+    popover: {
+      title: '🧾 Edit Content',
+      description: 'This is where you write or edit your draft’s content. Changes are saved automatically.',
+      side: 'top',
+      align: 'start'
+    }
+  },
+  {
+    element: '#save-note',
+    popover: {
+      title: '💾 Save Note',
+      description: 'Click to save your note. Once saved, it will be removed from the drafts list.',
+      side: 'top',
+      align: 'start'
+    }
+  },
+  {
+    element: '#delete-draft',
+    popover: {
+      title: '🗑️ Delete Draft',
+      description: 'Click to permanently delete this draft. This action cannot be undone.',
+      side: 'top',
+      align: 'start'
+    }
+  },
+  {
+    element: '#back',
+    popover: {
+      title: '↩️ Go Back',
+      description: 'No need to manually save—your draft is auto-saved as you type.',
+      side: 'top',
+      align: 'start'
+    }
+  }
+]
+
+,
+    onDestroyed: () => {
+      localStorage.setItem(localStorageKey, 'true');
+    }
+  });
+
+  setTimeout(() => Driver.drive(), 500); 
+}
 
   private initEditor(): void {
     if (!this.quillEditorRef) return;
@@ -156,23 +246,23 @@ autoSave(): void {
 
   const newNote = {
     ...this.draft,
-    savedAt: new Date().toISOString(), // optional: add savedAt timestamp
+    savedAt: new Date().toISOString(), 
   };
 
   this.noteService.create(newNote).subscribe({
     next: (note) => {
       console.log('Note created successfully:', note);
 
-      // Now delete the draft
+      
       if (this.draft.id) {
         this.draftService.delete(this.draft.id).subscribe({
           next: () => {
             console.log('Draft deleted');
-            this.router.navigate(['/']); // Navigate to note list or detail
+            this.router.navigate(['/']); 
           },
           error: (err) => {
             console.error('Failed to delete draft:', err);
-            // Still navigate to notes to avoid blocking UX
+           
             this.router.navigate(['/notes']);
           }
         });

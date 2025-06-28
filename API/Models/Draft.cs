@@ -12,6 +12,7 @@ namespace PersonalNotesManager.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public List<DraftTag>? DraftTags { get; set; } // Replaces NoteTags
+        public List<DraftTag> DraftTags { get; set; } = new();
+
     }
 }

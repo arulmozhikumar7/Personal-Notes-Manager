@@ -8,4 +8,18 @@ import { RouterLink, RouterModule } from '@angular/router';
   imports: [CommonModule, RouterModule],
   templateUrl: './sidebar.component.html',
 })
-export class SidebarComponent {}
+export class SidebarComponent {
+
+  resetTour() {
+    const tourKeys = [
+      'tour-draft-list',
+      'tour-draft-view',
+      'tour-note-add',
+      'tour-note-list',
+      'tour-note-view'
+    ];
+
+    tourKeys.forEach(key => localStorage.removeItem(key));
+    alert('UI tour has been reset.');
+  }
+}

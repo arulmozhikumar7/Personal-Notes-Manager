@@ -1,36 +1,107 @@
-<div class="p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-  <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-    
-    <!-- Header Section -->
-    <div class="bg-gradient-to-r from-slate-50 to-slate-100 p-6 border-b border-slate-200">
-      <div class="flex justify-between items-center">
-        <!-- Back Button and Title -->
-        <div class="flex items-center gap-4">
-          <a routerLink="/">
+<div class="p-4 sm:p-8 bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+@if(errorMessage)
+{
+<div class="bg-red-100 text-center text-red-800 border border-red-300 px-4 py-3 rounded-lg mb-4">
+  {{ errorMessage }}
+</div>
+ <a routerLink="/">
             <button
+            id="back"
               class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:border-indigo-300 hover:text-indigo-700 transition-all duration-200 shadow-sm"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Back to Notes
+              <span class="hidden sm:inline">Back to Notes</span>
+              <span class="sm:hidden">Back</span>
             </button>
           </a>
-          <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
-            <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        }
+@if(loading){
+  <div class="fixed inset-0 flex items-center justify-center bg-white z-50">
+  <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+</div>
+
+}
+
+@if(errorMessage===''){
+  <div class="max-w-5xl mx-auto bg-white rounded-xl sm:rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+    
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-slate-50 to-slate-100 p-4 sm:p-6 border-b border-slate-200">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <!-- Back Button and Title -->
+        <div class="flex items-center gap-2 sm:gap-4">
+          <a routerLink="/">
+            <button
+              class="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:border-indigo-300 hover:text-indigo-700 transition-all duration-200 shadow-sm"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span class="hidden sm:inline">Back to Notes</span>
+              <span class="sm:hidden">Back</span>
+            </button>
+          </a>
+          <h1 class="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-2 sm:gap-3">
+            <svg class="w-6 h-6 sm:w-7 sm:h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Note Details
+            <span class="hidden sm:inline">Note Details</span>
+            <span class="sm:hidden">Details</span>
           </h1>
         </div>
 
         <!-- Right Section: Edit/View Button and Auto-Save Status -->
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <!-- Export Button Group -->
+<div *ngIf="anyExportEnabled" class="relative inline-block text-left">
+  <button
+    type="button"
+    class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+    (click)="toggleDropdown()"
+  >
+    Export
+    <svg class="ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.293l3.71-4.06a.75.75 0 011.1 1.02l-4.25 4.65a.75.75 0 01-1.1 0L5.25 8.27a.75.75 0 01-.02-1.06z" clip-rule="evenodd" />
+    </svg>
+  </button>
+
+  <div
+    *ngIf="dropdownOpen"
+    class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+  >
+    <div class="py-1">
+      <button
+        *ngIf="exportFlags.pdfExport"
+        (click)="download('pdf'); closeDropdown()"
+        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+      >
+        Export as PDF
+      </button>
+      <button
+        *ngIf="exportFlags.imageExport"
+        (click)="download('image'); closeDropdown()"
+        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+      >
+        Export as Image
+      </button>
+      <button
+        *ngIf="exportFlags.htmlExport"
+        (click)="download('html'); closeDropdown()"
+        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+      >
+        Export as HTML
+      </button>
+    </div>
+  </div>
+</div>
+
           <!-- Auto-Save Status (only visible in edit mode) -->
-          <div *ngIf="isEditMode" class="flex items-center gap-2 text-sm">
+          <div *ngIf="isEditMode" class="flex items-center gap-2 text-xs sm:text-sm flex-1 sm:flex-initial">
             <!-- Saving Status -->
-            <div *ngIf="saveStatus === 'saving'" class="flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
-              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <div *ngIf="saveStatus === 'saving'" class="flex items-center gap-1 sm:gap-2 text-amber-600 bg-amber-50 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-amber-200">
+              <svg class="w-3 h-3 sm:w-4 sm:h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -38,16 +109,16 @@
             </div>
 
             <!-- Saved Status -->
-            <div *ngIf="saveStatus === 'saved'" class="flex items-center gap-2 text-green-600 bg-green-50 px-3 py-2 rounded-lg border border-green-200 animate-fade-in">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <div *ngIf="saveStatus === 'saved'" class="flex items-center gap-1 sm:gap-2 text-green-600 bg-green-50 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-green-200 animate-fade-in">
+              <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
               </svg>
               <span class="font-medium">Auto-saved</span>
             </div>
 
             <!-- Error Status -->
-            <div *ngIf="saveStatus === 'error'" class="flex items-center gap-2 text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <div *ngIf="saveStatus === 'error'" class="flex items-center gap-1 sm:gap-2 text-red-600 bg-red-50 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-red-200">
+              <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <span class="font-medium">Save failed</span>
@@ -57,13 +128,13 @@
           <!-- Edit/View Toggle Button -->
           <button
             (click)="toggleEdit()"
-            class="px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center gap-2"
+            class="px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all duration-200 flex items-center gap-1 sm:gap-2 text-sm sm:text-base whitespace-nowrap"
             [ngClass]="{
               'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5': isEditMode,
               'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-indigo-300 hover:text-indigo-700 shadow-sm': !isEditMode
             }"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="isEditMode ? 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' : 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'" />
             </svg>
             {{ isEditMode ? 'View' : 'Edit' }}
@@ -73,7 +144,7 @@
     </div>
 
     <!-- Content Section -->
-    <div class="p-8 space-y-8">
+    <div class="p-4 sm:p-8 space-y-6 sm:space-y-8" id="pdf-content">
       
       <!-- Title Section -->
       <div>
@@ -84,23 +155,23 @@
             [(ngModel)]="note.title"
             (ngModelChange)="onTitleChange()"
             placeholder="Enter your note title..."
-            class="w-full p-4 text-xl font-semibold border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition-all duration-200"
+            class="w-full p-3 sm:p-4 text-lg sm:text-xl font-semibold border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition-all duration-200"
           />
         </div>
         <ng-template #readonlyTitle>
-          <h2 class="text-4xl font-bold text-slate-800 leading-tight">{{ note.title }}</h2>
+          <h2 class="text-2xl sm:text-4xl font-bold text-slate-800 leading-tight">{{ note.title }}</h2>
         </ng-template>
       </div>
 
       <!-- Metadata Section -->
-      <div class="flex items-center gap-4 text-sm text-slate-500 bg-slate-50 rounded-xl p-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-slate-500 bg-slate-50 rounded-xl p-3 sm:p-4">
         <div class="flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Created: {{ note.createdAt | date: 'medium' }}
         </div>
-        <div class="w-px h-4 bg-slate-300"></div>
+        <div class="hidden sm:block w-px h-4 bg-slate-300"></div>
         <div class="flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -115,27 +186,27 @@
           <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
           </svg>
-          <h3 class="text-lg font-semibold text-slate-700">Tags</h3>
+          <h3 class="text-base sm:text-lg font-semibold text-slate-700">Tags</h3>
         </div>
 
         <div *ngIf="isEditMode" class="space-y-4">
-          <div class="relative">
+          <div class="relative" id="tag-input">
             <input
               type="text"
               [(ngModel)]="tagInput"
               (keydown)="onTagInputKeyDown($event)"
               placeholder="Type a tag and press Enter to add..."
-              class="w-full p-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition-all duration-200"
+              class="w-full p-3 sm:p-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 transition-all duration-200 pr-20 sm:pr-24"
             />
-            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-md">
+            <div class="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-md">
               Press Enter
             </div>
           </div>
 
-          <div class="flex flex-wrap gap-3">
+          <div class="flex flex-wrap gap-2 sm:gap-3">
             <span
               *ngFor="let tag of note.tags; let i = index"
-              class="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 rounded-lg text-sm font-medium border border-indigo-200 transition-all duration-200 hover:shadow-sm"
+              class="group flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1 sm:py-2 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 rounded-lg text-xs sm:text-sm font-medium border border-indigo-200 transition-all duration-200 hover:shadow-sm"
             >
               <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
@@ -146,7 +217,7 @@
                 class="ml-1 text-indigo-600 hover:text-red-500 focus:outline-none transition-colors duration-200 opacity-70 group-hover:opacity-100"
                 title="Remove tag"
               >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -154,10 +225,10 @@
           </div>
         </div>
 
-        <div *ngIf="!isEditMode && note.tags?.length" class="flex flex-wrap gap-3">
+        <div *ngIf="!isEditMode && note.tags?.length" class="flex flex-wrap gap-2 sm:gap-3">
           <span
             *ngFor="let tag of note.tags"
-            class="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium border border-slate-200"
+            class="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1 sm:py-2 bg-slate-100 text-slate-700 rounded-lg text-xs sm:text-sm font-medium border border-slate-200"
           >
             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
@@ -166,7 +237,7 @@
           </span>
         </div>
 
-        <div *ngIf="!isEditMode && !note.tags?.length" class="text-slate-400 text-sm italic flex items-center gap-2">
+        <div *ngIf="!isEditMode && !note.tags?.length" class="text-slate-400 text-xs sm:text-sm italic flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
           </svg>
@@ -180,17 +251,17 @@
           <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <h3 class="text-lg font-semibold text-slate-700">Content</h3>
+          <h3 class="text-base sm:text-lg font-semibold text-slate-700">Content</h3>
         </div>
 
-        <div *ngIf="isEditMode" class="bg-slate-50 rounded-xl p-2 border border-slate-200">
-          <div #quillEditor class="h-80 bg-white border border-slate-200 rounded-lg"></div>
+        <div *ngIf="isEditMode" class="bg-slate-50 rounded-xl p-2 border border-slate-200" id="quill-editor-container">
+          <div #quillEditor class="h-60 sm:h-80 bg-white border border-slate-200 rounded-lg"></div>
         </div>
         
-        <div *ngIf="!isEditMode" class="prose prose-slate max-w-none bg-slate-50 rounded-xl p-6 border border-slate-200" [innerHTML]="note.content"></div>
+        <div *ngIf="!isEditMode" class="prose prose-slate max-w-none bg-slate-50 rounded-xl p-4 sm:p-6 border border-slate-200 text-sm sm:text-base" [innerHTML]="note.content"></div>
       </div>
     </div>
-  </div>
+  </div>}
 </div>
 
 <style>
@@ -203,3 +274,10 @@
   animation: fade-in 0.3s ease-out;
 }
 </style>
+
+<div *ngIf="downloading" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+  <div class="text-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mx-auto mb-4"></div>
+    <p class="text-lg font-semibold text-indigo-700">Downloading your content...</p>
+  </div>
+</div>

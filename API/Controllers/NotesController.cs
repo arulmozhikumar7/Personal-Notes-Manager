@@ -83,5 +83,35 @@ namespace PersonalNotesManager.Controllers
             var results = await _noteService.FilterByTagsAsync(tags);
             return Ok(ApiResponse<List<NoteDto>>.SuccessResponse(results, "Notes filtered by tags."));
         }
+
+        [HttpGet("{id}/export")]
+        public async Task<IActionResult> ExportPdf(int id)
+        {
+            var pdfBytes = await _noteService.ExportNoteAsPdfAsync(id);
+            if (pdfBytes == null)
+                return NotFound(ApiResponse<object>.ErrorResponse("Note not found"));
+
+            return File(pdfBytes, "application/pdf", $"Note_{id}.pdf");
+        }
+
+        [HttpGet("{id}/export/image")]
+        public async Task<IActionResult> ExportNoteImage(int id)
+        {
+            var imageBytes = await _noteService.ExportNoteAsImageAsync(id);
+            if (imageBytes == null) return NotFound();
+
+            return File(imageBytes, "image/png", $"note-{id}.png");
+        }
+
+        [HttpGet("notes/{id}/export/html")]
+        public async Task<IActionResult> ExportNoteAsHtml(int id)
+        {
+            var bytes = await _noteService.ExportNoteAsHtmlAsync(id);
+            if (bytes == null) return NotFound();
+
+            var fileName = $"Note_{id}.html";
+            return File(bytes, "text/html", fileName);
+        }
+
     }
 }
